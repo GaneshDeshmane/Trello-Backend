@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trello</title>
+    <script src = "https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.7/axios.min.js"></script>
+</head>
+<body>
+    <script>
+    
+        const token = localStorage.getItem('token');
+        async function signup(){
+          
+            try{
+            const username = document.querySelector('input[name="username"]').value;
+            const password = document.querySelector('input[name="password"]').value;
+            const email = document.querySelector('input[name="email"]').value;
+            await axios.post('http://localhost:3000/signup',{username,password,email});
+            alert("Signup Successful");
+            }
+            catch(error){
+                alert("Signup Failed");
+            }
+        }
+        async function signin(){
+            try{
+            const email = document.querySelector('input[name="email"]').value;
+            const password = document.querySelector('input[name="password"]').value;
+            const response = await axios.post('http://localhost:3000/signin',
+            {email,password});
+            localStorage.setItem('token',response.data.token);
+            alert("Signin Successful");}
+            catch(error){
+                alert("Signin Failed");
+            }
+        }
+       
+
+    </script>
+    <div>Signup
+        <input type="text" name="username" placeholder="Username">
+        <input type="password" name="password" placeholder="Password">
+        <input type="email" name="email" placeholder="Email">
+        <button onclick="signup()">Signup</button>
+        
+    </div>
+    <div>Signin
+        <input type="text" name="email" placeholder="email">
+        <input type="password" name="password" placeholder="Password">
+        <button onclick="signin()">Signin</button>
+    </div>
+   
+</body>
+</html>

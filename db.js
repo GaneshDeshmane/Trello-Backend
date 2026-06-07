@@ -23,7 +23,7 @@ const IssueSchema = new Schema({
     user_Id : String
 })
 
-const UserModel = mongoose.model("User",userSchema);
+const UserModel = mongoose.model("users",userSchema);
 const OrganisationModel = mongoose.model("Organisation",OrganisationSchema);
 const BoardModel = mongoose.model("Board",BoardSchema);
 const IssueModel = mongoose.model("Issue",IssueSchema);

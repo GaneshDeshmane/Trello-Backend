@@ -5,11 +5,15 @@ const  JWT_SECRET = process.env.JWT_SECRET
 const {z}= require('zod')
 const {UserModel , OrganisationModel, BoardModel,IssueModel} = require('./db')
 const {authMiddleware}= require('./authMiddleware')
-
+const cors = require('cors');
 const app = express();
+app.use(cors());
+
 app.use(express.json())
 
-
+app.get('/',function(req,res){
+   res.sendFile(__dirname + '/frontend/index.html')
+})
 app.post('/signup',async function(req,res){
    const userRequired = z.object({
     email : z.string().email(),
@@ -62,10 +66,18 @@ app.post('/signin',async function(req,res){
             error : parseData.error.errors
         })
     }
-    const checkUser = await UserModel.findOne({
+    let checkUser;
+    try{
+         checkUser = await UserModel.findOne({
         email : parseData.data.email,
         password : parseData.data.password
-     })
+     })}catch(err){
+        return res.status(400).json({
+            msg : 'error occurred while signing in',
+            error : err.message
+        })
+     }
+
      if(!checkUser){
         return res.status(400).json({
             msg : 'invalid credentials'
@@ -78,7 +90,7 @@ app.post('/signin',async function(req,res){
         })
 
     })
-
+    
 
 app.post('/organisation',authMiddleware,async function(req,res){
     const user_Id = req.user_Id;
