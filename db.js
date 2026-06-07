@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-
+const dotenv = require('dotenv');
+dotenv.config();
+mongoose.connect(process.env.mongodb)
 const userSchema = new Schema({
     email : String,
     password : String,
@@ -13,7 +15,7 @@ const OrganisationSchema = new Schema({
 const BoardSchema = new Schema({
     name : String,
     user_Id : String,
-    
+
 })
 const IssueSchema = new Schema({
     title : String,
