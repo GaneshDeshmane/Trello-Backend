@@ -114,7 +114,7 @@ app.post('/boards',authMiddleware,async function(req,res){
     const NewBoard = await BoardModel.create({
         name : boardName,
         user_Id : user_Id,
-        organisationName : organisationfound._id
+        organisation_Id : organisationfound._id
     })
       res.json({
         msg : 'welcome to boards',
@@ -129,7 +129,7 @@ app.post('/issues',authMiddleware,async function(req,res){
     const issueDescription = req.body.issueDescription;
 
     const organisationCheck = await OrganisationModel.findOne({
-        organisationName : organisationName,
+        name : organisationName,
         user_Id : user_Id
     })
     if(!organisationCheck){
@@ -141,7 +141,7 @@ app.post('/issues',authMiddleware,async function(req,res){
     const boardCheck = await BoardModel.findOne({
         name : boardName,
         user_Id : user_Id,
-        organisationName : organisationCheck._id
+        organisation_Id : organisationCheck._id
     })
     if(!boardCheck){
         return res.status(400).json({
@@ -159,5 +159,31 @@ app.post('/issues',authMiddleware,async function(req,res){
         user_Id : user_Id
     })
 })
-
+app.get('/organisation',authMiddleware,async function(req,res){
+    const user_Id = req.user_Id;
+    const organisation = await OrganisationModel.find({
+        user_Id : user_Id
+    })
+    res.json({
+        data : organisation
+    })
+})
+app.get('/boards',authMiddleware,async function(req,res){
+    const user_Id = req.user_Id;
+    const board = await BoardModel.find({
+        user_Id : user_Id
+    })
+    res.json({
+        data : board
+    })
+})
+app.get('/issues',authMiddleware,async function(req,res){
+    const user_Id = req.user_Id;
+    const issue = await IssueModel.find({
+        user_Id : user_Id
+    })
+    res.json({
+        data : issue
+    })
+})  
 app.listen(3000)
