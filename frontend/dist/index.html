@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Taskflow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh;overflow-x:hidden}
+:root{
+  --navy:#0f172a;--sidebar:#1e293b;--card:#253347;--accent:#6366f1;--accent2:#818cf8;
+  --success:#10b981;--warn:#f59e0b;--danger:#ef4444;--text:#f1f5f9;--muted:#94a3b8;
+  --border:#334155;--input:#1e293b;--col:#1e293b
+}
+input,textarea{background:var(--input);border:1.5px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:inherit;font-size:14px;outline:none;transition:border .2s}
+input:focus,textarea:focus{border-color:var(--accent)}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+button{cursor:pointer;font-family:inherit;font-size:14px;border:none;border-radius:8px;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff;padding:10px 20px;font-weight:600}
+.btn-primary:hover{background:var(--accent2)}
+.btn-ghost{background:transparent;color:var(--muted);padding:6px 12px}
+.btn-ghost:hover{color:var(--text);background:rgba(255,255,255,.06)}
+.btn-danger{background:rgba(239,68,68,.12);color:#fca5a5;padding:10px 20px;font-weight:600;border:1px solid rgba(239,68,68,.25)}
+.btn-danger:hover{background:rgba(239,68,68,.25)}
+.btn-icon{background:transparent;border:none;color:var(--muted);padding:5px;border-radius:6px;display:flex;align-items:center;justify-content:center;line-height:1}
+.btn-icon:hover{background:rgba(255,255,255,.08);color:var(--text)}
+.btn-icon.danger:hover{background:rgba(239,68,68,.15);color:#fca5a5}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal{background:#1e293b;border:1px solid var(--border);border-radius:14px;padding:28px;width:420px;max-width:95vw}
+.modal h2{font-size:18px;font-weight:700;margin-bottom:20px;color:var(--text)}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.form-group input,.form-group textarea{width:100%}
+.error-msg{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px}
+.warn-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);color:#fcd34d;padding:12px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;line-height:1.5}
+.sidebar{width:240px;background:var(--sidebar);height:100vh;position:fixed;left:0;top:0;border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:10}
+.sidebar-logo{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff}
+.logo-text{font-size:17px;font-weight:700;color:var(--text)}
+.sidebar-section{padding:10px 12px}
+.sidebar-section-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding:6px 8px 8px}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--muted);transition:all .15s;margin-bottom:2px}
+.sidebar-item:hover,.sidebar-item.active{background:rgba(99,102,241,.15);color:var(--accent2)}
+.sidebar-item i{font-size:17px}
+.sidebar-bottom{margin-top:auto;padding:14px;border-top:1px solid var(--border)}
+.user-pill{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-email{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.main{margin-left:240px;min-height:100vh}
+.topbar{background:var(--sidebar);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+.page-title{font-size:17px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.breadcrumb{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.breadcrumb span{color:var(--text);font-weight:500}
+.page-content{padding:28px}
+.btn-add{background:rgba(99,102,241,.15);color:var(--accent2);padding:9px 16px;font-weight:600;display:flex;align-items:center;gap:7px;border-radius:9px;border:1px solid rgba(99,102,241,.25)}
+.btn-add:hover{background:rgba(99,102,241,.25)}
+.org-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.org-card{background:var(--col);border:1px solid var(--border);border-radius:12px;padding:20px;transition:all .2s;position:relative;overflow:hidden}
+.org-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent)}
+.org-card:hover{border-color:var(--accent)}
+.org-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.org-card-icon{width:40px;height:40px;background:rgba(99,102,241,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--accent2);flex-shrink:0}
+.org-card-body{cursor:pointer;flex:1}
+.org-card h3{font-size:15px;font-weight:700;margin-bottom:6px}
+.org-card p{font-size:12px;color:var(--muted)}
+.scroll-boards{display:flex;gap:16px;overflow-x:auto;padding-bottom:16px;align-items:flex-start}
+.board-col{background:var(--col);border:1px solid var(--border);border-radius:12px;width:300px;flex-shrink:0;display:flex;flex-direction:column;max-height:calc(100vh - 180px)}
+.board-col-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px}
+.board-col-header-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.board-col-header h3{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.board-col-header-actions{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.col-count{background:rgba(99,102,241,.2);color:var(--accent2);padding:2px 8px;border-radius:12px;font-size:12px;font-weight:600;flex-shrink:0}
+.board-col-body{padding:12px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px}
+.issue-card{background:#2d3f55;border:1px solid var(--border);border-radius:10px;padding:14px;transition:all .15s;border-left:3px solid var(--accent)}
+.issue-card:hover{border-color:rgba(99,102,241,.5)}
+.issue-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px}
+.issue-card h4{font-size:14px;font-weight:600;line-height:1.4;flex:1}
+.issue-card p{font-size:12px;color:var(--muted);line-height:1.5}
+.issue-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+.tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:rgba(99,102,241,.15);color:var(--accent2)}
+.add-issue-btn{margin:8px 12px;background:rgba(255,255,255,.04);border:1px dashed var(--border);color:var(--muted);padding:10px;border-radius:8px;width:calc(100% - 24px);display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px}
+.add-issue-btn:hover{background:rgba(99,102,241,.1);border-color:var(--accent);color:var(--accent2)}
+.add-board-col{width:300px;flex-shrink:0;background:rgba(255,255,255,.03);border:1.5px dashed var(--border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;cursor:pointer;transition:all .2s;min-height:120px}
+.add-board-col:hover{background:rgba(99,102,241,.08);border-color:var(--accent)}
+.add-board-col i{font-size:28px;color:var(--muted);margin-bottom:10px}
+.add-board-col span{font-size:14px;color:var(--muted)}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state i{font-size:48px;margin-bottom:16px;opacity:.4;display:block}
+.empty-state h3{font-size:16px;font-weight:600;margin-bottom:8px;color:var(--text);opacity:.7}
+.empty-state p{font-size:14px;line-height:1.6}
+.loading{text-align:center;padding:60px;color:var(--muted);font-size:14px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px}
+.badge-blue{background:rgba(56,189,248,.12);color:#7dd3fc}
+.toast{position:fixed;bottom:24px;right:24px;background:#1e293b;border:1px solid var(--border);border-radius:10px;padding:14px 20px;font-size:14px;font-weight:500;z-index:999;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:slideUp .25s ease}
+.toast.success{border-color:rgba(16,185,129,.4);color:#6ee7b7}
+.toast.error{border-color:rgba(239,68,68,.4);color:#fca5a5}
+@keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+.auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f172a}
+.auth-card{background:#1e293b;border:1px solid var(--border);border-radius:16px;padding:40px;width:420px;max-width:95vw}
+.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px;justify-content:center}
+.auth-logo .logo-icon{width:40px;height:40px;font-size:20px}
+.auth-logo .logo-text{font-size:22px}
+.auth-tabs{display:flex;background:rgba(255,255,255,.05);border-radius:10px;padding:4px;margin-bottom:28px}
+.auth-tab{flex:1;padding:9px;text-align:center;border-radius:8px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s}
+.auth-tab.active{background:var(--accent);color:#fff}
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+const {useState, useEffect, useCallback} = React;
+const API = 'http://localhost:3000';
+
+function api(path, opts = {}, token) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return fetch(API + path, { ...opts, headers: { ...headers, ...(opts.headers || {}) } }).then(r => r.json());
+}
+
+let toastTimer;
+
+function App() {
+  const [token, setToken] = useState(() => localStorage.getItem('tf_token') || '');
+  const [user, setUser] = useState(() => { try { return JSON.parse(localStorage.getItem('tf_user') || 'null') } catch { return null } });
+  const [selectedOrg, setSelectedOrg] = useState(null);
+  const [orgs, setOrgs] = useState([]);
+  const [boards, setBoards] = useState([]);
+  const [issues, setIssues] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [modal, setModal] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [form, setForm] = useState({});
+  const [err, setErr] = useState('');
+
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => setToast(null), 3000);
+  };
+
+  const load = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const [os, bs, is_] = await Promise.all([
+        api('/organisation', { method: 'GET' }, token),
+        api('/boards', { method: 'GET' }, token),
+        api('/issues', { method: 'GET' }, token)
+      ]);
+      setOrgs(os.data || []);
+      setBoards(bs.data || []);
+      setIssues(is_.data || []);
+    } catch (e) {
+      showToast('Failed to load data', 'error');
+    }
+    setLoading(false);
+  }, [token]);
+
+  useEffect(() => { if (token) load(); }, [token, load]);
+
+  const logout = () => {
+    localStorage.removeItem('tf_token');
+    localStorage.removeItem('tf_user');
+    setToken(''); setUser(null); setSelectedOrg(null);
+    setOrgs([]); setBoards([]); setIssues([]);
+  };
+
+  const openModal = (type, extra = {}) => { setModal({ type, ...extra }); setForm({}); setErr(''); };
+  const closeModal = () => { setModal(null); setForm({}); setErr(''); };
+
+  const handleSubmit = async () => {
+    setErr('');
+    try {
+      // CREATE ORG
+      if (modal.type === 'create-org') {
+        if (!form.name?.trim()) { setErr('Organisation name is required'); return; }
+        const r = await api('/organisation', { method: 'POST', body: JSON.stringify({ organisationName: form.name }) }, token);
+        if (r.msg?.includes('welcome')) { showToast('Organisation created!'); closeModal(); load(); }
+        else setErr(r.msg || 'Error');
+
+      // CREATE BOARD
+      } else if (modal.type === 'create-board') {
+        if (!form.name?.trim()) { setErr('Board name is required'); return; }
+        const r = await api('/boards', { method: 'POST', body: JSON.stringify({ boardName: form.name, organisationName: modal.orgName }) }, token);
+        if (r.msg?.includes('welcome')) { showToast('Board created!'); closeModal(); load(); }
+        else setErr(r.msg || 'Error');
+
+      // CREATE ISSUE
+      } else if (modal.type === 'create-issue') {
+        if (!form.title?.trim()) { setErr('Issue title is required'); return; }
+        const r = await api('/issues', { method: 'POST', body: JSON.stringify({ issueTitle: form.title, issueDescription: form.desc || '', boardName: modal.boardName, organisationName: modal.orgName }) }, token);
+        if (r.msg?.includes('welcome')) { showToast('Issue added!'); closeModal(); load(); }
+        else setErr(r.msg || 'Error');
+
+      // DELETE ORG
+      } else if (modal.type === 'delete-org') {
+        const r = await api('/organisation', { method: 'DELETE', body: JSON.stringify({ organisationName: modal.orgName }) }, token);
+        if (r.msg?.includes('deleted')) {
+          showToast('Organisation deleted');
+          closeModal();
+          if (selectedOrg?.name === modal.orgName) setSelectedOrg(null);
+          load();
+        } else setErr(r.msg || 'Error');
+
+      // DELETE BOARD
+      } else if (modal.type === 'delete-board') {
+        const r = await api('/boards', { method: 'DELETE', body: JSON.stringify({ boardName: modal.boardName }) }, token);
+        if (r.msg?.includes('deleted')) { showToast('Board deleted'); closeModal(); load(); }
+        else setErr(r.msg || 'Error');
+
+      // EDIT ISSUE
+      } else if (modal.type === 'edit-issue') {
+        if (!form.desc?.trim()) { setErr('New description is required'); return; }
+        const r = await api('/issues', { method: 'PUT', body: JSON.stringify({ issueTitle: modal.issue.title, newDescription: form.desc }) }, token);
+        if (r.msg?.includes('updated')) { showToast('Issue updated!'); closeModal(); load(); }
+        else setErr(r.msg || 'Error');
+
+      } else {
+        closeModal();
+      }
+    } catch (e) {
+      setErr('Cannot connect to server. Make sure localhost:3000 is running.');
+    }
+  };
+
+  if (!token) return <AuthPage onLogin={(t, u) => {
+    localStorage.setItem('tf_token', t);
+    localStorage.setItem('tf_user', JSON.stringify(u));
+    setToken(t); setUser(u);
+  }} />;
+
+  const orgsBoards = selectedOrg ? boards.filter(b => b.organisation_Id === selectedOrg._id) : [];
+  const getBoardIssues = bid => issues.filter(i => i.boardName === bid);
+
+  return (
+    <div>
+      {/* Sidebar */}
+      <div className="sidebar">
+        <div className="sidebar-logo">
+          <div className="logo-icon">T</div>
+          <div className="logo-text">Taskflow</div>
+        </div>
+        <div className="sidebar-section">
+          <div className="sidebar-section-label">Workspace</div>
+          <div className={`sidebar-item${!selectedOrg ? ' active' : ''}`} onClick={() => setSelectedOrg(null)}>
+            <i className="ti ti-building"></i> Organisations
+          </div>
+        </div>
+        {selectedOrg && (
+          <div className="sidebar-section">
+            <div className="sidebar-section-label">Current Org</div>
+            <div className="sidebar-item active">
+              <i className="ti ti-layout-kanban"></i>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedOrg.name}</span>
+            </div>
+          </div>
+        )}
+        <div className="sidebar-section">
+          <div className="sidebar-section-label">Quick Actions</div>
+          <div className="sidebar-item" onClick={() => openModal('create-org')}>
+            <i className="ti ti-plus"></i> New Organisation
+          </div>
+          {selectedOrg && (
+            <div className="sidebar-item" onClick={() => openModal('create-board', { orgName: selectedOrg.name })}>
+              <i className="ti ti-template"></i> New Board
+            </div>
+          )}
+        </div>
+        <div className="sidebar-bottom">
+          <div className="user-pill">
+            <div className="avatar">{(user?.username || 'U')[0].toUpperCase()}</div>
+            <div className="user-info">
+              <div className="user-name">{user?.username || 'User'}</div>
+              <div className="user-email">{user?.email || ''}</div>
+            </div>
+            <button className="btn-ghost" onClick={logout} title="Sign out" style={{ padding: '6px' }}>
+              <i className="ti ti-logout" style={{ fontSize: 17 }}></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main */}
+      <div className="main">
+        <div className="topbar">
+          {selectedOrg ? (
+            <div className="breadcrumb">
+              <span style={{ cursor: 'pointer', color: 'var(--muted)' }} onClick={() => setSelectedOrg(null)}>Organisations</span>
+              <i className="ti ti-chevron-right" style={{ fontSize: 14, color: 'var(--border)' }}></i>
+              <span>{selectedOrg.name}</span>
+            </div>
+          ) : (
+            <div className="page-title">
+              <i className="ti ti-building" style={{ fontSize: 20 }}></i> Organisations
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {selectedOrg ? (
+              <>
+                <button className="btn-add" onClick={() => openModal('create-board', { orgName: selectedOrg.name })}>
+                  <i className="ti ti-plus"></i> New Board
+                </button>
+                <button
+                  onClick={() => openModal('delete-org', { orgName: selectedOrg.name })}
+                  style={{ background: 'rgba(239,68,68,.1)', color: '#fca5a5', padding: '9px 14px', borderRadius: 9, border: '1px solid rgba(239,68,68,.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600 }}
+                >
+                  <i className="ti ti-trash" style={{ fontSize: 15 }}></i> Delete Org
+                </button>
+              </>
+            ) : (
+              <button className="btn-add" onClick={() => openModal('create-org')}>
+                <i className="ti ti-plus"></i> New Organisation
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="page-content">
+          {loading ? (
+            <div className="loading">
+              <i className="ti ti-loader" style={{ fontSize: 24, display: 'block', margin: '0 auto 12px' }}></i>
+              Loading...
+            </div>
+          ) : !selectedOrg ? (
+            orgs.length === 0 ? (
+              <div className="empty-state">
+                <i className="ti ti-building"></i>
+                <h3>No organisations yet</h3>
+                <p>Create your first organisation to start managing your work.</p>
+                <button className="btn-primary" style={{ marginTop: 20 }} onClick={() => openModal('create-org')}>
+                  <i className="ti ti-plus" style={{ marginRight: 6 }}></i>Create Organisation
+                </button>
+              </div>
+            ) : (
+              <div className="org-grid">
+                {orgs.map(o => (
+                  <div key={o._id} className="org-card">
+                    <div className="org-card-top">
+                      <div className="org-card-icon"><i className="ti ti-building-skyscraper"></i></div>
+                      <button
+                        className="btn-icon danger"
+                        title="Delete organisation"
+                        onClick={e => { e.stopPropagation(); openModal('delete-org', { orgName: o.name }); }}
+                      >
+                        <i className="ti ti-trash" style={{ fontSize: 15 }}></i>
+                      </button>
+                    </div>
+                    <div className="org-card-body" onClick={() => setSelectedOrg(o)}>
+                      <h3>{o.name}</h3>
+                      <p>{boards.filter(b => b.organisation_Id === o._id).length} board(s) — click to open</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          ) : (
+            <div>
+              <div style={{ marginBottom: 24 }}>
+                <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>{selectedOrg.name}</h1>
+                <p style={{ fontSize: 13, color: 'var(--muted)' }}>{orgsBoards.length} board(s)</p>
+              </div>
+              {orgsBoards.length === 0 ? (
+                <div className="empty-state">
+                  <i className="ti ti-layout-kanban"></i>
+                  <h3>No boards yet</h3>
+                  <p>Create a board to start tracking your work.</p>
+                  <button className="btn-primary" style={{ marginTop: 20 }} onClick={() => openModal('create-board', { orgName: selectedOrg.name })}>
+                    <i className="ti ti-plus" style={{ marginRight: 6 }}></i>Create Board
+                  </button>
+                </div>
+              ) : (
+                <div className="scroll-boards">
+                  {orgsBoards.map(b => {
+                    const bIssues = getBoardIssues(b._id);
+                    return (
+                      <div key={b._id} className="board-col">
+                        <div className="board-col-header">
+                          <div className="board-col-header-left">
+                            <i className="ti ti-layout-columns" style={{ fontSize: 15, color: 'var(--accent2)', flexShrink: 0 }}></i>
+                            <h3>{b.name}</h3>
+                            <span className="col-count">{bIssues.length}</span>
+                          </div>
+                          <div className="board-col-header-actions">
+                            <button
+                              className="btn-icon danger"
+                              title="Delete board"
+                              onClick={() => openModal('delete-board', { boardName: b.name })}
+                            >
+                              <i className="ti ti-trash" style={{ fontSize: 14 }}></i>
+                            </button>
+                          </div>
+                        </div>
+                        <div className="board-col-body">
+                          {bIssues.map(issue => (
+                            <div key={issue._id} className="issue-card">
+                              <div className="issue-card-header">
+                                <h4>{issue.title}</h4>
+                                <button
+                                  className="btn-icon"
+                                  title="Edit issue"
+                                  onClick={() => openModal('edit-issue', { issue, boardName: b.name, orgName: selectedOrg.name })}
+                                  style={{ flexShrink: 0 }}
+                                >
+                                  <i className="ti ti-pencil" style={{ fontSize: 13 }}></i>
+                                </button>
+                              </div>
+                              {issue.description && <p>{issue.description}</p>}
+                              <div className="issue-card-footer">
+                                <span className="tag">Issue</span>
+                                <span style={{ fontSize: 11, color: 'var(--muted)' }}>
+                                  <i className="ti ti-clock" style={{ fontSize: 11, marginRight: 3 }}></i>Open
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                          {bIssues.length === 0 && (
+                            <div style={{ textAlign: 'center', padding: '20px 10px', color: 'var(--muted)', fontSize: 13 }}>
+                              No issues yet
+                            </div>
+                          )}
+                        </div>
+                        <button className="add-issue-btn" onClick={() => openModal('create-issue', { boardName: b.name, orgName: selectedOrg.name })}>
+                          <i className="ti ti-plus" style={{ fontSize: 14 }}></i> Add Issue
+                        </button>
+                      </div>
+                    );
+                  })}
+                  <div className="add-board-col" onClick={() => openModal('create-board', { orgName: selectedOrg.name })}>
+                    <i className="ti ti-plus"></i>
+                    <span>Add Board</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modals */}
+      {modal && (
+        <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) closeModal(); }}>
+          <div className="modal">
+
+            {/* Create Org */}
+            {modal.type === 'create-org' && (<>
+              <h2><i className="ti ti-building" style={{ fontSize: 18, marginRight: 8, color: 'var(--accent2)' }}></i>New Organisation</h2>
+              {err && <div className="error-msg">{err}</div>}
+              <div className="form-group">
+                <label>Name</label>
+                <input autoFocus placeholder="e.g. Acme Corp" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} onKeyDown={e => e.key === 'Enter' && handleSubmit()} />
+              </div>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
+                <button className="btn-ghost" onClick={closeModal}>Cancel</button>
+                <button className="btn-primary" onClick={handleSubmit}>Create Organisation</button>
+              </div>
+            </>)}
+
+            {/* Create Board */}
+            {modal.type === 'create-board' && (<>
+              <h2><i className="ti ti-layout-kanban" style={{ fontSize: 18, marginRight: 8, color: 'var(--accent2)' }}></i>New Board</h2>
+              {err && <div className="error-msg">{err}</div>}
+              <div className="form-group">
+                <label>Board Name</label>
+                <input autoFocus placeholder="e.g. Sprint 1, Backlog, Design" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} onKeyDown={e => e.key === 'Enter' && handleSubmit()} />
+              </div>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
+                <button className="btn-ghost" onClick={closeModal}>Cancel</button>
+                <button className="btn-primary" onClick={handleSubmit}>Create Board</button>
+              </div>
+            </>)}
+
+            {/* Create Issue */}
+            {modal.type === 'create-issue' && (<>
+              <h2><i className="ti ti-circle-plus" style={{ fontSize: 18, marginRight: 8, color: 'var(--accent2)' }}></i>Add Issue</h2>
+              <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 18 }}>
+                Board: <strong style={{ color: 'var(--accent2)' }}>{modal.boardName}</strong>
+              </p>
+              {err && <div className="error-msg">{err}</div>}
+              <div className="form-group">
+                <label>Title</label>
+                <input autoFocus placeholder="What needs to be done?" value={form.title || ''} onChange={e => setForm({ ...form, title: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label>Description (optional)</label>
+                <textarea rows={3} placeholder="Add more details..." value={form.desc || ''} onChange={e => setForm({ ...form, desc: e.target.value })} style={{ width: '100%', resize: 'vertical' }} />
+              </div>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
+                <button className="btn-ghost" onClick={closeModal}>Cancel</button>
+                <button className="btn-primary" onClick={handleSubmit}>Add Issue</button>
+              </div>
+            </>)}
+
+            {/* Edit Issue */}
+            {modal.type === 'edit-issue' && (<>
+              <h2><i className="ti ti-pencil" style={{ fontSize: 18, marginRight: 8, color: 'var(--accent2)' }}></i>Edit Issue</h2>
+              <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 8, padding: '10px 14px', marginBottom: 18 }}>
+                <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 4 }}>TITLE</p>
+                <p style={{ fontSize: 14, fontWeight: 600 }}>{modal.issue.title}</p>
+              </div>
+              {err && <div className="error-msg">{err}</div>}
+              <div className="form-group">
+                <label>New Description</label>
+                <textarea
+                  autoFocus
+                  rows={4}
+                  placeholder="Update the description..."
+                  value={form.desc !== undefined ? form.desc : (modal.issue.description || '')}
+                  onChange={e => setForm({ ...form, desc: e.target.value })}
+                  style={{ width: '100%', resize: 'vertical' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
+                <button className="btn-ghost" onClick={closeModal}>Cancel</button>
+                <button className="btn-primary" onClick={handleSubmit}>Save Changes</button>
+              </div>
+            </>)}
+
+            {/* Delete Org */}
+            {modal.type === 'delete-org' && (<>
+              <h2><i className="ti ti-alert-triangle" style={{ fontSize: 18, marginRight: 8, color: '#fcd34d' }}></i>Delete Organisation</h2>
+              <div className="warn-box">
+                This will permanently delete <strong>"{modal.orgName}"</strong> and cannot be undone.
+              </div>
+              {err && <div className="error-msg">{err}</div>}
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
+                <button className="btn-ghost" onClick={closeModal}>Cancel</button>
+                <button className="btn-danger" onClick={handleSubmit}>Delete Organisation</button>
+              </div>
+            </>)}
+
+            {/* Delete Board */}
+            {modal.type === 'delete-board' && (<>
+              <h2><i className="ti ti-alert-triangle" style={{ fontSize: 18, marginRight: 8, color: '#fcd34d' }}></i>Delete Board</h2>
+              <div className="warn-box">
+                This will permanently delete the board <strong>"{modal.boardName}"</strong> and cannot be undone.
+              </div>
+              {err && <div className="error-msg">{err}</div>}
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
+                <button className="btn-ghost" onClick={closeModal}>Cancel</button>
+                <button className="btn-danger" onClick={handleSubmit}>Delete Board</button>
+              </div>
+            </>)}
+
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className={`toast ${toast.type}`}>
+          <i className={`ti ${toast.type === 'success' ? 'ti-circle-check' : 'ti-alert-circle'}`} style={{ fontSize: 17 }}></i>
+          {toast.msg}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AuthPage({ onLogin }) {
+  const [tab, setTab] = useState('signin');
+  const [form, setForm] = useState({});
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const submit = async () => {
+    setErr('');
+    if (!form.email || !form.password) { setErr('Email and password are required'); return; }
+    setLoading(true);
+    try {
+      if (tab === 'signup') {
+        if (!form.username) { setErr('Username is required'); setLoading(false); return; }
+        const r = await api('/signup', { method: 'POST', body: JSON.stringify({ email: form.email, password: form.password, username: form.username }) });
+        if (r.msg?.includes('successfully')) {
+          const s = await api('/signin', { method: 'POST', body: JSON.stringify({ email: form.email, password: form.password }) });
+          if (s.token) onLogin(s.token, { email: form.email, username: form.username });
+          else setErr(s.msg || 'Auto sign-in failed, please sign in manually');
+        } else setErr(r.msg || 'Signup failed');
+      } else {
+        const r = await api('/signin', { method: 'POST', body: JSON.stringify({ email: form.email, password: form.password }) });
+        if (r.token) onLogin(r.token, { email: form.email, username: form.email.split('@')[0] });
+        else setErr(r.msg || 'Invalid credentials');
+      }
+    } catch (e) {
+      setErr('Cannot connect to server. Make sure localhost:3000 is running.');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-logo">
+          <div className="logo-icon">T</div>
+          <div className="logo-text">Taskflow</div>
+        </div>
+        <div className="auth-tabs">
+          <div className={`auth-tab${tab === 'signin' ? ' active' : ''}`} onClick={() => { setTab('signin'); setErr(''); }}>Sign In</div>
+          <div className={`auth-tab${tab === 'signup' ? ' active' : ''}`} onClick={() => { setTab('signup'); setErr(''); }}>Sign Up</div>
+        </div>
+        {err && <div className="error-msg">{err}</div>}
+        {tab === 'signup' && (
+          <div className="form-group">
+            <label>Username</label>
+            <input autoFocus placeholder="yourname" value={form.username || ''} onChange={e => setForm({ ...form, username: e.target.value })} />
+          </div>
+        )}
+        <div className="form-group">
+          <label>Email</label>
+          <input type="email" placeholder="you@example.com" value={form.email || ''} onChange={e => setForm({ ...form, email: e.target.value })} />
+        </div>
+        <div className="form-group">
+          <label>Password</label>
+          <input type="password" placeholder="••••••" value={form.password || ''} onChange={e => setForm({ ...form, password: e.target.value })} onKeyDown={e => e.key === 'Enter' && submit()} />
+        </div>
+        <button className="btn-primary" style={{ width: '100%', padding: '12px', marginTop: 8 }} onClick={submit} disabled={loading}>
+          {loading ? 'Please wait…' : tab === 'signin' ? 'Sign In' : 'Create Account'}
+        </button>
+        <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--muted)', marginTop: 16 }}>
+          {tab === 'signin' ? "No account? " : "Have an account? "}
+          <span style={{ color: 'var(--accent2)', cursor: 'pointer' }} onClick={() => { setTab(tab === 'signin' ? 'signup' : 'signin'); setErr(''); }}>
+            {tab === 'signin' ? 'Sign up free' : 'Sign in'}
+          </span>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

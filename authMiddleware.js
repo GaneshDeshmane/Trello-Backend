@@ -1,8 +1,11 @@
 const jwt = require('jsonwebtoken')
-const JWT_SECRET = 'skycode'
-
+const JWT_SECRET = process.env.JWT_SECRET
+require('dotenv').config();
 function authMiddleware(req,res,next){
-    const token = req.headers.token;
+    const  authHeader = req.headers["authorization"];
+    console.log("authheader here:" + authHeader +"ends here")
+    const token = authHeader.split(" ")[1];//this part removes the bearer part from the token and gives us the actual token
+    console.log("token here:" + token +"ends here")
     if(!token){
         res.status(401).json({
             msg : 'token not found'

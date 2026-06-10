@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 mongoose.connect(process.env.mongodb)
 const userSchema = new Schema({
+    user_Id :{type : String, unique : true},
     email : String,
     password : String,
     username : String
@@ -15,12 +16,13 @@ const OrganisationSchema = new Schema({
 const BoardSchema = new Schema({
     name : String,
     user_Id : String,
-
+    organisation_Id : { type: Schema.Types.ObjectId, ref: 'Organisation' }
 })
 const IssueSchema = new Schema({
     title : String,
     description : String,
-    user_Id : String
+    user_Id : String,
+    boardName : { type: Schema.Types.ObjectId, ref: 'Board' }
 })
 
 const UserModel = mongoose.model("users",userSchema);

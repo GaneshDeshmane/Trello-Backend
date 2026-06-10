@@ -11,8 +11,9 @@ app.use(cors());
 
 app.use(express.json())
 
+app.use(express.static(__dirname + '/frontend/dist'))
 app.get('/',function(req,res){
-   res.sendFile(__dirname + '/frontend/index.html')
+   res.sendFile(__dirname + '/frontend/dist/index.html')
 })
 app.post('/signup',async function(req,res){
    const userRequired = z.object({
@@ -94,10 +95,11 @@ app.post('/signin',async function(req,res){
 
 app.post('/organisation',authMiddleware,async function(req,res){
     const user_Id = req.user_Id;
-
+    const token = req.body.token;
     const organisationName = req.body.organisationName;
 
     const NewBoard = await OrganisationModel.create({
+        
         name : organisationName,
         user_Id : user_Id
     })
@@ -197,5 +199,56 @@ app.get('/issues',authMiddleware,async function(req,res){
     res.json({
         data : issue
     })
+})
+app.delete('/organisation',authMiddleware,async function(req,res){
+    const user_Id = req.user_Id;
+    const organisationName = req.body.organisationName;
+    const deleteOrganisation = await OrganisationModel.findOneAndDelete({
+        name : organisationName,
+        user_Id : user_Id
+    })
+    if(!deleteOrganisation){
+        return res.status(400).json({
+            msg : 'organisation not found'
+        })
+    }
+    res.json({
+        msg : 'organisation deleted successfully'
+    })
 })  
+app.delete('/boards',authMiddleware,async function(req,res){
+    const user_Id = req.user_Id;
+    const boardName = req.body.boardName;
+    const deleteBoard = await BoardModel.findOneAndDelete({
+        name : boardName,
+        user_Id : user_Id
+    })
+    if(!deleteBoard){
+        return res.status(400).json({
+            msg : 'board not found'
+        })
+    }
+    res.json({
+        msg : 'board deleted successfully'
+    })
+})  
+app.put('/issues',authMiddleware,async function(req,res){
+    const user_Id = req.user_Id;
+    const issueTitle = req.body.issueTitle;
+    const newDescription = req.body.newDescription;
+    const updateIssue = await IssueModel.findOneAndUpdate({
+        title : issueTitle,
+        user_Id : user_Id
+    },{
+        description : newDescription
+    })
+    if(!updateIssue){
+        return res.status(400).json({
+            msg : 'issue not found'
+        })
+    }
+    res.json({
+        msg : 'issue updated successfully'
+    })
+})
 app.listen(3000)
