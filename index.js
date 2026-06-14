@@ -251,4 +251,10 @@ app.put('/issues',authMiddleware,async function(req,res){
         msg : 'issue updated successfully'
     })
 })
-app.listen(3000)
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log("Server started");
+});
+
+module.exports = app;
