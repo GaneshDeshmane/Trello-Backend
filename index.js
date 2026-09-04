@@ -1,5 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
 const env = require("dotenv").config();
 const  JWT_SECRET = process.env.JWT_SECRET
 const {z}= require('zod')
@@ -15,6 +16,9 @@ app.use(express.static(__dirname + '/frontend/dist'))
 app.get('/',function(req,res){
    res.sendFile(__dirname + '/frontend/dist/index.html')
 })
+
+const SALT_ROUNDS = 10;
+
 app.post('/signup',async function(req,res){
    const userRequired = z.object({
     email : z.string().email(),
@@ -37,9 +41,10 @@ app.post('/signup',async function(req,res){
         msg : 'user already exists'
     })}
    try{
+       const hashedPassword = await bcrypt.hash(ParseData.data.password, SALT_ROUNDS)
        await UserModel.create({
         email : ParseData.data.email,
-        password : ParseData.data.password,
+        password : hashedPassword,
         username : ParseData.data.username
     })
     res.json({
@@ -70,8 +75,7 @@ app.post('/signin',async function(req,res){
     let checkUser;
     try{
          checkUser = await UserModel.findOne({
-        email : parseData.data.email,
-        password : parseData.data.password
+        email : parseData.data.email
      })}catch(err){
         return res.status(400).json({
             msg : 'error occurred while signing in',
@@ -84,6 +88,14 @@ app.post('/signin',async function(req,res){
             msg : 'invalid credentials'
         })
      }
+
+     const passwordMatch = await bcrypt.compare(parseData.data.password, checkUser.password)
+     if(!passwordMatch){
+        return res.status(400).json({
+            msg : 'invalid credentials'
+        })
+     }
+
         const token = jwt.sign({user_Id : checkUser._id},JWT_SECRET)
         res.json({
             msg : 'signedin successfully',
