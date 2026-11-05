@@ -186,13 +186,27 @@ app.post('/issues',authMiddleware,async function(req,res){
     })
 })
 app.get('/organisation',authMiddleware,async function(req,res){
-    const user_Id = req.user_Id;
-    const organisation = await OrganisationModel.find({
-        user_Id : user_Id
-    })
-    res.json({
-        data : organisation
-    })
+    try {
+        if(!req.body.organisationName) {
+            return res.status(400).json({
+                msg : 'organisation name is required',
+                error : null
+            })
+        }
+        
+        const user_Id = req.user_Id;
+        const organisation = await OrganisationModel.find({
+            user_Id : user_Id
+        })
+        res.json({
+            data : organisation
+        })
+    } catch(err) {
+        return res.status(500).json({
+            msg : 'error occurred',
+            error : err.message
+        })
+    }
 })
 app.get('/boards',authMiddleware,async function(req,res){
     const user_Id = req.user_Id;
