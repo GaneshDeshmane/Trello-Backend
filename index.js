@@ -107,18 +107,42 @@ app.post('/signin',async function(req,res){
 
 app.post('/organisation',authMiddleware,async function(req,res){
     const user_Id = req.user_Id;
+    
+    // Validate request body fields
+    if(!req.body || !req.body.token || !req.body.organisationName){
+        return res.status(400).json({
+            msg : 'missing required fields',
+            error : ['token is required', 'organisationName is required']
+        })
+    }
+    
     const token = req.body.token;
     const organisationName = req.body.organisationName;
-
-    const NewBoard = await OrganisationModel.create({
-        
-        name : organisationName,
-        user_Id : user_Id
-    })
-    res.json({
-        msg : 'welcome to organisation',
-        user_Id : user_Id
-    })
+    
+    // Validate organisation name format (must be non-empty string)
+    if(typeof organisationName !== 'string' || organisationName.trim() === ''){
+        return res.status(400).json({
+            msg : 'invalid organisation name',
+            error : 'organisationName must be a non-empty string'
+        })
+    }
+    
+    try {
+        const NewBoard = await OrganisationModel.create({
+            name : organisationName,
+            user_Id : user_Id
+        })
+        res.json({
+            msg : 'welcome to organisation',
+            user_Id : user_Id,
+            data : NewBoard
+        })
+    } catch(err){
+        res.status(500).json({
+            error : err.message,
+            msg : 'error creating organisation'
+        })
+    }
 })
 app.post('/boards',authMiddleware,async function(req,res){
     const user_Id = req.user_Id;
@@ -187,12 +211,20 @@ app.post('/issues',authMiddleware,async function(req,res){
 })
 app.get('/organisation',authMiddleware,async function(req,res){
     const user_Id = req.user_Id;
-    const organisation = await OrganisationModel.find({
-        user_Id : user_Id
-    })
-    res.json({
-        data : organisation
-    })
+    
+    try {
+        const organisation = await OrganisationModel.find({
+            user_Id : user_Id
+        })
+        res.json({
+            data : organisation
+        })
+    } catch(err){
+        res.status(500).json({
+            error : err.message,
+            msg : 'error fetching organisations'
+        })
+    }
 })
 app.get('/boards',authMiddleware,async function(req,res){
     const user_Id = req.user_Id;
@@ -214,19 +246,45 @@ app.get('/issues',authMiddleware,async function(req,res){
 })
 app.delete('/organisation',authMiddleware,async function(req,res){
     const user_Id = req.user_Id;
-    const organisationName = req.body.organisationName;
-    const deleteOrganisation = await OrganisationModel.findOneAndDelete({
-        name : organisationName,
-        user_Id : user_Id
-    })
-    if(!deleteOrganisation){
+    
+    // Validate request body fields
+    if(!req.body || !req.body.organisationName){
         return res.status(400).json({
-            msg : 'organisation not found'
+            msg : 'missing required fields',
+            error : ['organisationName is required']
         })
     }
-    res.json({
-        msg : 'organisation deleted successfully'
-    })
+    
+    const organisationName = req.body.organisationName;
+    
+    // Validate organisation name format (must be non-empty string)
+    if(typeof organisationName !== 'string' || organisationName.trim() === ''){
+        return res.status(400).json({
+            msg : 'invalid organisation name',
+            error : 'organisationName must be a non-empty string'
+        })
+    }
+    
+    try {
+        const deleteOrganisation = await OrganisationModel.findOneAndDelete({
+            name : organisationName,
+            user_Id : user_Id
+        })
+        
+        if(!deleteOrganisation){
+            return res.status(404).json({
+                msg : 'organisation not found'
+            })
+        }
+        res.json({
+            msg : 'organisation deleted successfully'
+        })
+    } catch(err){
+        res.status(500).json({
+            error : err.message,
+            msg : 'error deleting organisation'
+        })
+    }
 })  
 app.delete('/boards',authMiddleware,async function(req,res){
     const user_Id = req.user_Id;
