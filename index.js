@@ -106,19 +106,52 @@ app.post('/signin',async function(req,res){
     
 
 app.post('/organisation',authMiddleware,async function(req,res){
-    const user_Id = req.user_Id;
-    const token = req.body.token;
-    const organisationName = req.body.organisationName;
+    // Validate input using zod
+    const orgValidation = z.object({
+        token: z.string().min(1),
+        organisationName: z.string().min(1).max(100)
+    }).safeParse(req.body);
+    
+    if(!orgValidation.success){
+        return res.status(400).json({
+            msg : 'validation error',
+            error : orgValidation.error.errors
+        })
+    }
+    
+    try{
+        const user_Id = req.user_Id;
+        const token = orgValidation.data.token;
+        const organisationName = orgValidation.data.organisationName;
 
-    const NewBoard = await OrganisationModel.create({
-        
-        name : organisationName,
-        user_Id : user_Id
-    })
-    res.json({
-        msg : 'welcome to organisation',
-        user_Id : user_Id
-    })
+        // Validate token if provided (optional)
+        if(token){
+            try{
+                jwt.verify(token, JWT_SECRET);
+            }catch(err){
+                return res.status(401).json({
+                    msg : 'invalid token',
+                    error : err.message
+                })
+            }
+        }
+
+        const NewBoard = await OrganisationModel.create({
+            
+            name : organisationName,
+            user_Id : user_Id
+        })
+        res.json({
+            msg : 'welcome to organisation',
+            user_Id : user_Id,
+            data : { id: NewBoard._id, name: NewBoard.name }
+        })
+    }catch(err){
+        res.status(500).json({
+            error : err.message,
+            msg : 'error creating organisation'
+        })
+    }
 })
 app.post('/boards',authMiddleware,async function(req,res){
     const user_Id = req.user_Id;
