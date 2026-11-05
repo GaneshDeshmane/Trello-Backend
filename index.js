@@ -110,15 +110,23 @@ app.post('/organisation',authMiddleware,async function(req,res){
     const token = req.body.token;
     const organisationName = req.body.organisationName;
 
-    const NewBoard = await OrganisationModel.create({
-        
-        name : organisationName,
-        user_Id : user_Id
-    })
-    res.json({
-        msg : 'welcome to organisation',
-        user_Id : user_Id
-    })
+    try{
+        const NewBoard = await OrganisationModel.create({
+            
+            name : organisationName,
+            user_Id : user_Id
+        })
+        res.json({
+            msg : 'welcome to organisation',
+            data : NewBoard,
+            user_Id : user_Id
+        })
+    }catch(err){
+        res.status(500).json({
+            msg : 'error creating organisation',
+            error : err.message
+        })
+    }
 })
 app.post('/boards',authMiddleware,async function(req,res){
     const user_Id = req.user_Id;
